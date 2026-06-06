@@ -1,12 +1,10 @@
-"""View Calendar — private chat button + /calendar group command."""
+"""View Calendar — private chat only."""
 from datetime import date
 from telegram import Update, InlineKeyboardMarkup
-from telegram.ext import ContextTypes, CallbackQueryHandler, CommandHandler
+from telegram.ext import ContextTypes, CallbackQueryHandler
 
 from .constants import fmt_date, fmt_hour, main_menu_button
 from .db import get_all_upcoming
-
-_AUTO_DELETE_SECONDS = 60
 
 
 def build_calendar_text() -> str:
@@ -27,16 +25,6 @@ def build_calendar_text() -> str:
     return "\n".join(lines)
 
 
-async def _schedule_delete(ctx: ContextTypes, chat_id: int, message_id: int):
-    async def _delete(job_ctx: ContextTypes):
-        try:
-            await job_ctx.bot.delete_message(chat_id=chat_id, message_id=message_id)
-        except Exception:
-            pass
-
-    ctx.job_queue.run_once(_delete, _AUTO_DELETE_SECONDS)
-
-
 async def view_calendar_private(update: Update, ctx: ContextTypes):
     query = update.callback_query
     await query.answer()
@@ -47,13 +35,7 @@ async def view_calendar_private(update: Update, ctx: ContextTypes):
     )
 
 
-async def calendar_command_group(update: Update, ctx: ContextTypes):
-    msg = await update.message.reply_text(build_calendar_text(), parse_mode="HTML")
-    await _schedule_delete(ctx, msg.chat_id, msg.message_id)
-
-
 def get_calendar_handlers():
     return [
         CallbackQueryHandler(view_calendar_private, pattern="^menu:calendar$"),
-        CommandHandler("calendar", calendar_command_group),
     ]
