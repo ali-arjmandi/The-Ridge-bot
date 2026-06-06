@@ -9,7 +9,7 @@ from .db import get_all_upcoming
 _AUTO_DELETE_SECONDS = 60
 
 
-def _build_calendar_text() -> str:
+def build_calendar_text() -> str:
     rows = get_all_upcoming()
     if not rows:
         return "No upcoming reservations."
@@ -41,27 +41,19 @@ async def view_calendar_private(update: Update, ctx: ContextTypes):
     query = update.callback_query
     await query.answer()
     await query.edit_message_text(
-        _build_calendar_text(),
+        build_calendar_text(),
         parse_mode="HTML",
         reply_markup=InlineKeyboardMarkup([[main_menu_button()]]),
     )
 
 
 async def calendar_command_group(update: Update, ctx: ContextTypes):
-    msg = await update.message.reply_text(_build_calendar_text(), parse_mode="HTML")
-    await _schedule_delete(ctx, msg.chat_id, msg.message_id)
-
-
-async def group_calendar_button(update: Update, ctx: ContextTypes):
-    query = update.callback_query
-    await query.answer()
-    msg = await query.message.reply_text(_build_calendar_text(), parse_mode="HTML")
+    msg = await update.message.reply_text(build_calendar_text(), parse_mode="HTML")
     await _schedule_delete(ctx, msg.chat_id, msg.message_id)
 
 
 def get_calendar_handlers():
     return [
         CallbackQueryHandler(view_calendar_private, pattern="^menu:calendar$"),
-        CallbackQueryHandler(group_calendar_button, pattern="^group:calendar$"),
         CommandHandler("calendar", calendar_command_group),
     ]

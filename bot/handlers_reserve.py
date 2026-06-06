@@ -202,7 +202,8 @@ async def _announce_new(ctx: ContextTypes, username, loc, d, start_h, end_h):
         f"🗓 {fmt_date(d)}\n"
         f"⏰ {fmt_hour(start_h)} – {fmt_hour(end_h)}"
     )
-    keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("📅 View Calendar", callback_data="group:calendar")]])
+    url = f"https://t.me/{ctx.bot.username}?start=calendar"
+    keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("📅 View Calendar", url=url)]])
     try:
         await ctx.bot.send_message(group_id, text, parse_mode="HTML", reply_markup=keyboard)
     except Exception:

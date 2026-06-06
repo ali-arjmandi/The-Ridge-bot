@@ -15,7 +15,7 @@ from telegram.ext import (
 from .db import init_db, get_config
 from .handlers_reserve import build_reservation_conv
 from .handlers_my_reservations import get_my_reservations_handlers
-from .handlers_calendar import get_calendar_handlers
+from .handlers_calendar import get_calendar_handlers, build_calendar_text
 from .handlers_admin import admin_menu, build_admin_conv
 
 load_dotenv()
@@ -38,6 +38,11 @@ def _main_menu_markup(is_admin: bool) -> InlineKeyboardMarkup:
 
 async def start(update: Update, ctx: ContextTypes):
     if update.effective_chat.type != "private":
+        return
+    # Deep link: ?start=calendar — show calendar directly
+    if ctx.args and ctx.args[0] == "calendar":
+        markup = InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Main Menu", callback_data="menu:back")]])
+        await update.message.reply_text(build_calendar_text(), parse_mode="HTML", reply_markup=markup)
         return
     admin_id = ctx.bot_data.get("admin_id")
     is_admin = update.effective_user.id == admin_id
